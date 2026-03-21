@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sanjin.lease.web.admin.mapper.LabelInfoMapper">
+    <select id="findLabelListByApartmentId" resultType="com.sanjin.lease.model.entity.LabelInfo">
+        select name from label_info
+        where id in (select label_id from apartment_label where apartment_id=#{id} and is_deleted=0)
+    </select>
+
+    <select id="findLabelListByRoomId" resultType="com.sanjin.lease.model.entity.LabelInfo">
+        SELECT id,
+               type,
+               name
+        FROM label_info WHERE is_deleted=0
+                          AND id IN (SELECT label_id
+                                     FROM room_label WHERE is_deleted=0 AND room_id=#{id})
+    </select>
+</mapper>

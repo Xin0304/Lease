@@ -1,0 +1,37 @@
+package com.sanjin.lease.web.app.controller.payment;
+
+
+import com.sanjin.lease.common.result.Result;
+import com.sanjin.lease.model.entity.PaymentType;
+import com.sanjin.lease.web.app.service.PaymentTypeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@Tag(name = "支付方式接口")
+@RestController("appPaymentTypeController")
+@RequestMapping("/app/payment")
+public class PaymentTypeController {
+
+    @Autowired
+    private PaymentTypeService paymentTypeService;
+
+    @Operation(summary = "根据房间 id 获取可选支付方式列表")
+    @GetMapping("listByRoomId")
+    public Result<List<PaymentType>> list(@RequestParam Long id) {
+        List<PaymentType> list = paymentTypeService.listByRoomId(id);
+        return Result.ok(list);
+    }
+
+    @Operation(summary = "获取全部支付方式列表")
+    @GetMapping("list")
+    public Result<List<PaymentType>> list() {
+        return Result.ok(paymentTypeService.list());
+    }
+}
