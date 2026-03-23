@@ -3,6 +3,7 @@ package com.sanjin.lease.web.app.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sanjin.lease.common.exception.LeaseException;
+import com.sanjin.lease.common.redisconstant.RedisConstant;
 import com.sanjin.lease.common.result.ResultCodeEnum;
 import com.sanjin.lease.common.utils.JwtUtil;
 import com.sanjin.lease.model.entity.UserInfo;
@@ -13,10 +14,12 @@ import com.sanjin.lease.web.app.service.UserInfoService;
 import com.sanjin.lease.web.app.utils.VerifyCodeUtil;
 import com.sanjin.lease.web.app.vo.user.LoginVo;
 import com.sanjin.lease.web.app.vo.user.UserInfoVo;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -28,12 +31,12 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Service
 public class LoginServiceImpl implements LoginService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
-
 
 
     @Autowired
@@ -44,63 +47,89 @@ public class LoginServiceImpl implements LoginService {
     //获取验证码
     @Override
     public void getCode(String phone) throws IOException {
-        String verifyCode = VerifyCodeUtil.getVerifyCode(4);
-        this.sendMessage(phone,verifyCode);
-        redisTemplate.opsForValue().set(phone,verifyCode,5, TimeUnit.HOURS);
-    }
 
-    //获取验证码登录
-    @Override
-    public String login(LoginVo loginVo) {
-
-        //1 从loginVo获取验证码和手机号，非空判断
-        if (StringUtils.hasText( loginVo.getPhone())){
+        //验证手机号是否为空
+        if (!StringUtils.hasText(phone)){
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_PHONE_EMPTY);
         }
+
+
+        //判断验证码是否存在
+        String key = RedisConstant.APP_LOGIN_PREFIX + phone;
+        Boolean hasKey = redisTemplate.hasKey(key);
+        if (hasKey){
+            //若存在，则检查其存在的时间
+            Long expire = redisTemplate.getExpire(key, TimeUnit.MINUTES);
+            if (RedisConstant.APP_LOGIN_CODE_TTL_SEC - expire <
+                    RedisConstant.APP_LOGIN_CODE_RESEND_TIME_SEC){
+                //若存在时间不足一分钟，响应发送过于频繁
+                throw new LeaseException(ResultCodeEnum.APP_SEND_SMS_TOO_OFTEN);
+            }
+        }
+
+        String verifyCode = VerifyCodeUtil.getVerifyCode(4);
+        this.sendMessage(phone,verifyCode);
+        redisTemplate.opsForValue().set(phone,verifyCode,5, TimeUnit.MINUTES);
+    }
+
+    //用户登录
+    @Override
+    public String userLogin(LoginVo loginVo) {
+
+        //验证手机号
+        if (StringUtils.hasText(loginVo.getPhone())) {
+            throw new LeaseException(ResultCodeEnum.APP_LOGIN_PHONE_EMPTY);
+        }
+
+        //验证验证码
         if (StringUtils.hasText(loginVo.getCode())){
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_CODE_EMPTY);
         }
-        //2 判断验证码是否正确
-        // 把redis里面验证码 和 输入比对，redis的key是手机号
-        String redis_code = redisTemplate.opsForValue().get(loginVo.getPhone());
+
+        //获取redis验证码
+        String redis_code = redisTemplate.opsForValue().get(loginVo.getCode());
+
+        //验证码不存在
         if (redis_code == null){
-            throw new LeaseException("验证码失败",222);
+            throw new LeaseException("验证码获取失败",222);
         }
-        //3 验证码不相同，提示用户
+        //验证码验证
         if (!redis_code.equals(loginVo.getCode())){
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_CODE_ERROR);
         }
-        //4 验证码相同，判断当前手机号是否第一次登录
+
+        //验证用户
         LambdaQueryWrapper<UserInfo> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(UserInfo::getPhone,loginVo.getPhone());
         UserInfo userInfo = userInfoMapper.selectOne(wrapper);
 
-
-
-        //5 如果当前手机号是第一次登录，注册，把手机号信息添加用户表
-                //把手机号信息添加用户表
+        //创建用户 判断是否是第一次登录
         if (userInfo == null){
-            userInfo = new UserInfo();
             userInfo.setPhone(loginVo.getPhone());
             userInfo.setStatus(BaseStatus.ENABLE);
-            userInfo.setNickname("用户-"+loginVo.getPhone().substring(5));
             userInfoMapper.insert(userInfo);
         }
-        //6 判断用户是否被禁用
-        if (userInfo.getStatus().equals(BaseStatus.ENABLE)){
+
+        //验证用户状态
+        if (userInfo.getStatus().equals(BaseStatus.DISABLE)){
             throw new LeaseException(ResultCodeEnum.APP_ACCOUNT_DISABLED_ERROR);
         }
 
-        //7 jwt生成token，返回
-        String token = JwtUtil.createToken(userInfo.getId(), userInfo.getPhone());
-        return token;
+        return JwtUtil.createToken(userInfo.getId(),userInfo.getPhone());
     }
 
-    //获取登录用户信息
+
     @Override
-    public UserInfoVo findLoginUserInfo(Long userId) {
-        UserInfo userInfo = userInfoService.getById(userId);
-        return new UserInfoVo(userInfo.getNickname(), userInfo.getAvatarUrl());
+    public UserInfoVo getUserInfoId(Long userId) {
+
+        UserInfo userInfoId = userInfoService.getById(userId);
+        if (userInfoId == null){
+            throw new LeaseException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
+        }
+
+        UserInfoVo userInfoVo = new UserInfoVo(userInfoId.getNickname(), userInfoId.getAvatarUrl());
+
+        return userInfoVo;
     }
 
     private void sendMessage(String phone, String verifyCode) throws IOException {

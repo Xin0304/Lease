@@ -10,7 +10,8 @@ public interface LoginService {
 
     void getCode(String phone) throws IOException;
 
-    String login(LoginVo loginVo);
 
-    UserInfoVo findLoginUserInfo(Long userId);
+    String userLogin(LoginVo loginVo);
+
+    UserInfoVo getUserInfoId(Long userId);
 }

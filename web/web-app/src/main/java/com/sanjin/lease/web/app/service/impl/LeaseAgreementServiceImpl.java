@@ -15,6 +15,7 @@ import com.sanjin.lease.web.app.service.LeaseAgreementService;
 import com.sanjin.lease.web.app.vo.agreement.AgreementDetailVo;
 import com.sanjin.lease.web.app.vo.agreement.AgreementItemVo;
 import com.sanjin.lease.web.app.vo.graph.GraphVo;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,46 +52,43 @@ public class LeaseAgreementServiceImpl extends ServiceImpl<LeaseAgreementMapper,
 
 
     @Override
-    public List<AgreementItemVo> listAgreementItemByPhone(String phone) {
-        return leaseAgreementMapper.listAgreementItemByPhone(phone);
+    public List<AgreementItemVo> getAgreementVoListByPhone(String username) {
+
+        return leaseAgreementMapper.listAgreementItemByPhone(username);
     }
 
     @Override
-    public AgreementDetailVo getAgreementDetailById(Long id) {
-        //1.查询租约信息
+    public AgreementDetailVo getAgreementVoListById(Long id) {
         LeaseAgreement leaseAgreement = leaseAgreementMapper.selectById(id);
-        if (leaseAgreement == null) {
+
+        if (leaseAgreement == null){
             return null;
         }
+        ApartmentInfo apartmentInfo =
+                apartmentInfoMapper.selectApartmentById(leaseAgreement.getApartmentId());
 
-        //2.查询公寓信息
-        ApartmentInfo apartmentInfo = apartmentInfoMapper.selectApartmentById(leaseAgreement.getApartmentId());
+        List<GraphVo> arpartmentGraphoVoList =
+                apartmentInfoMapper.selectListByItemTypeAndId(ItemType.APARTMENT, leaseAgreement.getApartmentId());
+        List<GraphVo> roomGraphVoList =
+                graphInfoMapper.selectListByItemTypeAndId(ItemType.ROOM, leaseAgreement.getRoomId());
 
-        //3.查询房间信息
-        RoomInfo roomInfo = roomInfoMapper.selectRoomById(leaseAgreement.getRoomId());
+        RoomInfo roomInfo = roomInfoMapper.selectById(id);
 
-        //4.查询公寓图片
-        List<GraphVo> apartmentGraphVoList = graphInfoMapper.selectListByItemTypeAndId(ItemType.APARTMENT, leaseAgreement.getApartmentId());
+        PaymentType paymentType =
+                paymentTypeMapper.selectById(leaseAgreement.getPaymentTypeId());
 
-        //5.查询房间图片
-        List<GraphVo> roomGraphVoList = graphInfoMapper.selectListByItemTypeAndId(ItemType.ROOM, leaseAgreement.getRoomId());
-
-        //6.查询租期信息
-        LeaseTerm leaseTerm = leaseTermMapper.selectLeaseTermById(leaseAgreement.getLeaseTermId());
-
-        //7.查询支付方式
-        PaymentType paymentType = paymentTypeMapper.selectPaymentTypeById(leaseAgreement.getPaymentTypeId());
+        LeaseTerm leaseTerm =
+                leaseTermMapper.selectLeaseTermById(leaseAgreement.getLeaseTermId());
 
         AgreementDetailVo agreementDetailVo = new AgreementDetailVo();
         BeanUtils.copyProperties(leaseAgreement, agreementDetailVo);
         agreementDetailVo.setApartmentName(apartmentInfo.getName());
-        agreementDetailVo.setRoomNumber(roomInfo.getRoomNumber());
-        agreementDetailVo.setApartmentGraphVoList(apartmentGraphVoList);
+        agreementDetailVo.setApartmentGraphVoList(arpartmentGraphoVoList);
         agreementDetailVo.setRoomGraphVoList(roomGraphVoList);
+        agreementDetailVo.setRoomNumber(roomInfo.getRoomNumber());
         agreementDetailVo.setPaymentTypeName(paymentType.getName());
         agreementDetailVo.setLeaseTermMonthCount(leaseTerm.getMonthCount());
         agreementDetailVo.setLeaseTermUnit(leaseTerm.getUnit());
-
         return agreementDetailVo;
     }
 }

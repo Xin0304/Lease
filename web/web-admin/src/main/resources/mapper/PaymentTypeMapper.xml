@@ -7,7 +7,7 @@
     <select id="findPaymentTypeListByRoomId" resultType="com.sanjin.lease.model.entity.PaymentType">
         SELECT id,
                name,
-               pay_month_count
+               pay_month_count,
                    additional_info
         FROM payment_type WHERE is_deleted=0
                             AND id IN(SELECT payment_type_id

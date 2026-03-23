@@ -1,7 +1,10 @@
 package com.sanjin.lease.web.app.mapper;
 
+import com.sanjin.lease.model.entity.LeaseTerm;
 import com.sanjin.lease.model.entity.RoomLeaseTerm;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
 * @author liubo
@@ -11,6 +14,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 */
 public interface RoomLeaseTermMapper extends BaseMapper<RoomLeaseTerm> {
 
+    List<LeaseTerm> getRoomLeaseTermById(Long id);
 }
 
 

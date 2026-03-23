@@ -28,10 +28,9 @@ public class BrowsingHistoryController {
     private Result<IPage<HistoryItemVo>> page(@RequestParam long current,
                                               @RequestParam long size) {
 
-        IPage<HistoryItemVo> page = new Page<>(current, size);
-        IPage<HistoryItemVo> list =
-                historyService.pageHistoryItemByUserId(page, LoginUserContext.getLoginUser().getUserId());
-        return Result.ok(list);
+        Page<HistoryItemVo> page = new Page<>(current, size);
+        historyService.pageHistoryItemByUserId(page,LoginUserContext.getLoginUser().getUserId());
+        return Result.ok();
     }
 
 }

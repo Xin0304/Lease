@@ -5,6 +5,7 @@ import com.sanjin.lease.web.app.mapper.ViewAppointmentMapper;
 import com.sanjin.lease.web.app.service.ApartmentInfoService;
 import com.sanjin.lease.web.app.service.ViewAppointmentService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sanjin.lease.web.app.vo.apartment.ApartmentDetailVo;
 import com.sanjin.lease.web.app.vo.apartment.ApartmentItemVo;
 import com.sanjin.lease.web.app.vo.appointment.AppointmentDetailVo;
 import com.sanjin.lease.web.app.vo.appointment.AppointmentItemVo;
@@ -29,6 +30,7 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
     @Autowired
     private ApartmentInfoService apartmentInfoService;
 
+
     @Override
     public List<AppointmentItemVo> listAppointmentItemByUserId(Long userId) {
         return viewAppointmentMapper.listAppointmentItemByUserId(userId);
@@ -36,20 +38,19 @@ public class ViewAppointmentServiceImpl extends ServiceImpl<ViewAppointmentMappe
 
     @Override
     public AppointmentDetailVo getAppointmentDetailVoById(Long id) {
-
         ViewAppointment viewAppointment = viewAppointmentMapper.selectById(id);
-        if (viewAppointment == null) {
+        if (viewAppointment == null){
             return null;
         }
 
-        ApartmentItemVo apartmentItemVo = apartmentInfoService.getApartmentItemVoById(viewAppointment.getApartmentId());
+        ApartmentItemVo apartmentItemVo =
+                apartmentInfoService.getApartmentItemVoById(viewAppointment.getApartmentId());
 
-        AppointmentDetailVo agreementDetailVo = new AppointmentDetailVo();
-        BeanUtils.copyProperties(viewAppointment, agreementDetailVo);
+        AppointmentDetailVo appointmentDetailVo = new AppointmentDetailVo();
+        BeanUtils.copyProperties(viewAppointment,apartmentItemVo);
+        appointmentDetailVo.setApartmentItemVo(apartmentItemVo);
 
-        agreementDetailVo.setApartmentItemVo(apartmentItemVo);
-
-        return agreementDetailVo;
+        return appointmentDetailVo;
     }
 }
 

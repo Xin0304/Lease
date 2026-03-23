@@ -13,7 +13,5 @@ import java.util.List;
 public interface PaymentTypeService extends IService<PaymentType> {
 
 
-    List<PaymentType> findPaymentTypeListById(Long id);
-
-    List<PaymentType> listByRoomId(Long id);
+    List<PaymentType> selectListRoomById(Long id);
 }

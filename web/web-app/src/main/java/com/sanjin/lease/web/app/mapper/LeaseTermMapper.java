@@ -18,6 +18,8 @@ public interface LeaseTermMapper extends BaseMapper<LeaseTerm> {
     LeaseTerm selectLeaseTermById(Long leaseTermId);
 
     List<LeaseTerm> selectListByRoomId(Long id);
+
+    List<LeaseTerm> selectListLeaseTermRoomById(Long id);
 }
 
 

@@ -24,7 +24,7 @@
                  left join apartment_info ai on va.apartment_id = ai.id
                  left join graph_info gi
                            on ai.id = gi.item_id
-                               and gi.item_type = ${@com.atguigu.lease.model.enums.ItemType@APARTMENT.getCode()}
+                               and gi.item_type = ${@com.sanjin.lease.model.enums.ItemType@APARTMENT.getCode()}
         where va.is_deleted = 0
           and gi.is_deleted = 0
           and user_id = #{userId}

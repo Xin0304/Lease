@@ -1,7 +1,10 @@
 package com.sanjin.lease.web.app.service;
 
+import com.sanjin.lease.model.entity.LeaseTerm;
 import com.sanjin.lease.model.entity.RoomLeaseTerm;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author liubo
@@ -10,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface RoomLeaseTermService extends IService<RoomLeaseTerm> {
 
+    List<LeaseTerm> getRoomLeaseTermById(Long id);
 }

@@ -2,7 +2,9 @@ package com.sanjin.lease.web.app.controller.leasaterm;
 
 import com.sanjin.lease.common.result.Result;
 import com.sanjin.lease.model.entity.LeaseTerm;
+import com.sanjin.lease.model.entity.RoomLeaseTerm;
 import com.sanjin.lease.web.app.service.LeaseTermService;
+import com.sanjin.lease.web.app.service.RoomLeaseTermService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.checkerframework.checker.units.qual.A;
@@ -18,14 +20,15 @@ import java.util.List;
 @RequestMapping("/app/term/")
 @Tag(name = "租期信息")
 public class LeaseTermController {
-    @Autowired
-    private LeaseTermService leaseTermService;
 
+    @Autowired
+    private RoomLeaseTermService roomLeaseTermService;
 
     @GetMapping("listByRoomId")
     @Operation(summary = "根据房间id获取可选获取租期列表")
     public Result<List<LeaseTerm>> list(@RequestParam Long id) {
-        List<LeaseTerm> list = leaseTermService.listByRoomId(id);
-        return Result.ok(list);
+        List<LeaseTerm> leaseTerms =
+                roomLeaseTermService.getRoomLeaseTermById(id);
+        return Result.ok(leaseTerms);
     }
 }

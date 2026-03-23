@@ -22,11 +22,12 @@ public class PaymentTypeController {
     @Autowired
     private PaymentTypeService paymentTypeService;
 
+
     @Operation(summary = "根据房间 id 获取可选支付方式列表")
     @GetMapping("listByRoomId")
     public Result<List<PaymentType>> list(@RequestParam Long id) {
-        List<PaymentType> list = paymentTypeService.listByRoomId(id);
-        return Result.ok(list);
+        List<PaymentType> paymentTypes = paymentTypeService.selectListRoomById(id);
+        return Result.ok(paymentTypes);
     }
 
     @Operation(summary = "获取全部支付方式列表")

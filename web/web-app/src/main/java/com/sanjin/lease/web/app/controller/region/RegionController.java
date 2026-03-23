@@ -1,6 +1,8 @@
 package com.sanjin.lease.web.app.controller.region;
 
 
+
+import ch.qos.logback.classic.spi.EventArgUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sanjin.lease.common.result.Result;
 import com.sanjin.lease.model.entity.CityInfo;
@@ -33,6 +35,7 @@ public class RegionController {
     @Autowired
     private DistrictInfoService districtInfoService;
 
+
     @Operation(summary="查询省份信息列表")
     @GetMapping("province/list")
     public Result<List<ProvinceInfo>> listProvince(){
@@ -42,18 +45,16 @@ public class RegionController {
     @Operation(summary="根据省份id查询城市信息列表")
     @GetMapping("city/listByProvinceId")
     public Result<List<CityInfo>> listCityInfoByProvinceId(@RequestParam Long id){
-        LambdaQueryWrapper<CityInfo> cityInfoLambdaQueryWrapper =
-                new LambdaQueryWrapper<>();
-        cityInfoLambdaQueryWrapper.eq(CityInfo::getProvinceId,id);
-        return Result.ok(cityInfoService.list(cityInfoLambdaQueryWrapper));
+        LambdaQueryWrapper<CityInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CityInfo::getProvinceId,id);
+        return Result.ok(cityInfoService.list(wrapper));
     }
 
     @GetMapping("district/listByCityId")
     @Operation(summary="根据城市id查询区县信息")
     public Result<List<DistrictInfo>> listDistrictInfoByCityId(@RequestParam Long id){
-        LambdaQueryWrapper<DistrictInfo> districtInfoLambdaQueryWrapper =
-                new LambdaQueryWrapper<>();
-        districtInfoLambdaQueryWrapper.eq(DistrictInfo::getCityId,id);
-        return Result.ok(districtInfoService.list(districtInfoLambdaQueryWrapper));
+        LambdaQueryWrapper<DistrictInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DistrictInfo::getCityId, id);
+        return Result.ok(districtInfoService.list(wrapper));
     }
 }

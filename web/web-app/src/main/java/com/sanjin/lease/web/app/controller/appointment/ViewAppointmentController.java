@@ -1,6 +1,7 @@
 package com.sanjin.lease.web.app.controller.appointment;
 
 
+import com.sanjin.lease.common.context.LoginUser;
 import com.sanjin.lease.common.context.LoginUserContext;
 import com.sanjin.lease.common.result.Result;
 import com.sanjin.lease.model.entity.ViewAppointment;
@@ -20,30 +21,29 @@ import java.util.List;
 @RequestMapping("/app/appointment")
 public class ViewAppointmentController {
 
-
     @Autowired
-    private ViewAppointmentService ViewAppointmentService;
+    private ViewAppointmentService viewAppointmentService;
+
     @Operation(summary = "保存或更新看房预约")
     @PostMapping("saveOrUpdate")
     public Result saveOrUpdate(@RequestBody ViewAppointment viewAppointment) {
-        viewAppointment.setUserId(LoginUserContext.getLoginUser().getUserId());
-        ViewAppointmentService.saveOrUpdate(viewAppointment);
-        return Result.ok();
+        viewAppointment.setId(LoginUserContext.getLoginUser().getUserId());
+        return Result.ok(viewAppointmentService.saveOrUpdate(viewAppointment));
     }
 
     @Operation(summary = "查询个人预约看房列表")
     @GetMapping("listItem")
     public Result<List<AppointmentItemVo>> listItem() {
-        List<AppointmentItemVo> list = ViewAppointmentService.listAppointmentItemByUserId(LoginUserContext.getLoginUser().getUserId());
-        return Result.ok(list);
+        List<AppointmentItemVo> appointmentItemVos =
+                viewAppointmentService.listAppointmentItemByUserId(LoginUserContext.getLoginUser().getUserId());
+        return Result.ok(appointmentItemVos);
     }
 
 
     @GetMapping("getDetailById")
     @Operation(summary = "根据ID查询预约详情信息")
     public Result<AppointmentDetailVo> getDetailById(Long id) {
-        AppointmentDetailVo detail = ViewAppointmentService.getAppointmentDetailVoById(id);
-        return Result.ok(detail);
+        return Result.ok(viewAppointmentService.getAppointmentDetailVoById(id));
     }
 
 }

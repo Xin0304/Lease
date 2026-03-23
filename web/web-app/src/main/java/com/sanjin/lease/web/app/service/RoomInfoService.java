@@ -16,9 +16,9 @@ import com.sanjin.lease.web.app.vo.room.RoomQueryVo;
 public interface RoomInfoService extends IService<RoomInfo> {
 
 
+    IPage<RoomItemVo> pageRoomItemByQuery(Page<RoomItemVo> page, RoomQueryVo queryVo);
+
     RoomDetailVo getRoomDetailById(Long id);
 
     IPage<RoomItemVo> pageItemByApartmentId(Page<RoomItemVo> page, Long id);
-
-    IPage<RoomItemVo> pageRoomItemByQuery(Page<RoomItemVo> page, RoomQueryVo queryVo);
 }

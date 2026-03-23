@@ -5,7 +5,7 @@
 <mapper namespace="com.sanjin.lease.web.app.mapper.AttrValueMapper">
 
 
-    <select id="findAttrValueListByRoomId" resultType="com.sanjin.lease.web.app.vo.attr.AttrValueVo">
+    <select id="selectListAttrValueVoByRoomId" resultType="com.sanjin.lease.web.app.vo.attr.AttrValueVo">
         select v.id,
                v.name,
                v.attr_key_id,

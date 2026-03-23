@@ -14,8 +14,8 @@ import java.util.List;
 */
 public interface AttrValueMapper extends BaseMapper<AttrValue> {
 
+    List<AttrValueVo> selectListAttrValueVoByRoomId(Long id);
 
-    List<AttrValueVo> findAttrValueListByRoomId(Long id);
 }
 
 

@@ -20,4 +20,19 @@
                        where is_deleted = 0
                          and apartment_id = #{apartmentId})
     </select>
+    <select id="selectListFeeValueRoomById" resultType="com.sanjin.lease.web.app.vo.fee.FeeValueVo">
+        select v.id,
+               v.name,
+               v.unit,
+               v.fee_key_id,
+               k.name fee_key_name
+        from fee_value v
+                 left join fee_key k on v.fee_key_id = k.id
+        where v.is_deleted = 0
+          and k.is_deleted = 0
+          and v.id in (select fee_value_id
+                       from apartment_fee_value
+                       where is_deleted = 0
+                         and apartment_id = #{apartmentId})
+    </select>
 </mapper>

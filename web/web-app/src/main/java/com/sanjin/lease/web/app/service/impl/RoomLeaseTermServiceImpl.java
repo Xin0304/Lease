@@ -1,10 +1,14 @@
 package com.sanjin.lease.web.app.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sanjin.lease.model.entity.LeaseTerm;
 import com.sanjin.lease.model.entity.RoomLeaseTerm;
 import com.sanjin.lease.web.app.service.RoomLeaseTermService;
 import com.sanjin.lease.web.app.mapper.RoomLeaseTermMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
 * @author liubo
@@ -15,6 +19,12 @@ import org.springframework.stereotype.Service;
 public class RoomLeaseTermServiceImpl extends ServiceImpl<RoomLeaseTermMapper, RoomLeaseTerm>
     implements RoomLeaseTermService{
 
+    @Autowired
+    private RoomLeaseTermMapper roomLeaseTermMapper;
+    @Override
+    public List<LeaseTerm> getRoomLeaseTermById(Long id) {
+        return roomLeaseTermMapper.getRoomLeaseTermById(id);
+    }
 }
 
 

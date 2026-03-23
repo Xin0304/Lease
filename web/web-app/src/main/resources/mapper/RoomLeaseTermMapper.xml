@@ -4,4 +4,26 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sanjin.lease.web.app.mapper.RoomLeaseTermMapper">
 
+    <select id="getRoomLeaseTermById" resultType="com.sanjin.lease.model.entity.LeaseTerm">
+        SELECT ri.id,
+               ri.room_number,
+               ri.rent,
+               ri.apartment_id,
+               ri.is_deleted,
+               ri.create_time,
+               ri.update_time,
+               lt.id lease_term_id,
+               lt.month_count,
+               lt.unit,
+               lt.create_time lease_term_create_time,
+               lt.update_time lease_term_update_time,
+               lt.is_deleted lease_term_is_deleted
+        FROM room_info ri
+                LEFT JOIN room_lease_term rlt
+                     ON rlt.room_id= ri.id
+                left JOIN lease_term lt
+                     ON rlt.lease_term_id= lt.id
+        WHERE ri.is_deleted=0
+          AND ri.id=#{id}
+    </select>
 </mapper>

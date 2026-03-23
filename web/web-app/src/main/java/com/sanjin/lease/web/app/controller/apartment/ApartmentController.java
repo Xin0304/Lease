@@ -1,13 +1,18 @@
 package com.sanjin.lease.web.app.controller.apartment;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sanjin.lease.common.result.Result;
 import com.sanjin.lease.model.entity.ApartmentInfo;
+import com.sanjin.lease.web.app.service.ApartmentInfoService;
 import com.sanjin.lease.web.app.vo.apartment.ApartmentDetailVo;
 import com.sanjin.lease.web.app.vo.apartment.ApartmentItemVo;
 import com.sanjin.lease.web.app.vo.apartment.ApartmentQueryVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -20,9 +25,13 @@ import java.util.List;
 @RequestMapping("/app/apartment")
 public class ApartmentController {
 
+    @Autowired
+    private ApartmentInfoService apartmentInfoService;
     @Operation(summary = "根据id获取公寓信息")
     @GetMapping("getDetailById")
     public Result<ApartmentDetailVo> getDetailById(@RequestParam Long id) {
+        ApartmentDetailVo apartmentDetailVo =
+                apartmentInfoService.getApartmentDetailById(id);
        return Result.ok();
     }
 
@@ -31,13 +40,18 @@ public class ApartmentController {
     public Result<IPage<ApartmentItemVo>> pageItem(@RequestParam long current,
                                                    @RequestParam long size,
                                                    ApartmentQueryVo queryVo) {
-        return Result.ok();
+        Page<ApartmentItemVo> page = new Page<>(current, size);
+        IPage<ApartmentItemVo> apartmentItemVo =
+                apartmentInfoService.pageApartmentItemVo(page, queryVo);
+        return Result.ok(apartmentItemVo);
     }
 
     @Operation(summary = "根据区县id查询公寓信息列表")
     @GetMapping("listInfoByDistrictId")
     public Result<List<ApartmentInfo>> listInfoByDistrictId(@RequestParam Long id) {
-
-        return Result.ok();
+        LambdaQueryWrapper<ApartmentInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ApartmentInfo::getCityId,id);
+        List<ApartmentInfo> list = apartmentInfoService.list();
+        return Result.ok(list);
     }
 }

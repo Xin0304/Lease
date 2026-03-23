@@ -30,37 +30,37 @@
           and apartment_id = #{id}
     </select>
     <select id="pageItemByApartmentId" resultMap="RoomItemVoMap">
-        elect ri.id,
-           ri.room_number,
-           ri.rent,
-           ri.apartment_id,
-           ri.is_release,
-           ai.id         apart_id,
-           ai.name,
-           ai.introduction,
-           ai.district_id,
-           ai.district_name,
-           ai.city_id,
-           ai.city_name,
-           ai.province_id,
-           ai.province_name,
-           ai.address_detail,
-           ai.latitude,
-           ai.longitude,
-           ai.phone,
-           ai.is_release apart_is_release
-    from room_info ri
-             left join apartment_info ai
-                       on ri.apartment_id = ai.id
-    where ri.is_deleted = 0
-      and ai.is_deleted = 0
-      and ai.id = #{id}
-        and ri.id not in (select room_id
-        from lease_agreement
-        where is_deleted = 0
-        and status in (${@com.atguigu.lease.model.enums.LeaseStatus@SIGNED.getCode()},
-        ${@com.atguigu.lease.model.enums.LeaseStatus@WITHDRAWING.getCode()}))
-        and ri.is_release = ${@com.atguigu.lease.model.enums.ReleaseStatus@RELEASED.getCode()}
+        select ri.id,
+               ri.room_number,
+               ri.rent,
+               ri.apartment_id,
+               ri.is_release,
+               ai.id         apart_id,
+               ai.name,
+               ai.introduction,
+               ai.district_id,
+               ai.district_name,
+               ai.city_id,
+               ai.city_name,
+               ai.province_id,
+               ai.province_name,
+               ai.address_detail,
+               ai.latitude,
+               ai.longitude,
+               ai.phone,
+               ai.is_release apart_is_release
+        from room_info ri
+                 left join apartment_info ai
+                           on ri.apartment_id = ai.id
+        where ri.is_deleted = 0
+          and ai.is_deleted = 0
+          and ai.id = #{id}
+          and ri.id not in (select room_id
+                            from lease_agreement
+                            where is_deleted = 0
+                              and status in (${@com.sanjin.lease.model.enums.LeaseStatus@SIGNED.getCode()},
+                                             ${@com.sanjin.lease.model.enums.LeaseStatus@WITHDRAWING.getCode()}))
+          and ri.is_release = ${@com.sanjin.lease.model.enums.ReleaseStatus@RELEASED.getCode()}
     </select>
     <select id="listGraphVoByRoomId" resultType="com.sanjin.lease.web.app.vo.graph.GraphVo">
         select
@@ -103,9 +103,9 @@
             select room_id
             from lease_agreement
             where is_deleted = 0
-            and status in(${@com.atguigu.lease.model.enums.LeaseStatus@SIGNED.getCode()},
-            ${@com.atguigu.lease.model.enums.LeaseStatus@WITHDRAWING.getCode()}))
-            and ri.is_release = ${@com.atguigu.lease.model.enums.ReleaseStatus@RELEASED.getCode()}
+            and status in(${@com.sanjin.lease.model.enums.LeaseStatus@SIGNED.getCode()},
+            ${@com.sanjin.lease.model.enums.LeaseStatus@WITHDRAWING.getCode()}))
+            and ri.is_release = ${@com.sanjin.lease.model.enums.ReleaseStatus@RELEASED.getCode()}
             <if test="queryVo.provinceId != null">
                 and ai.province_id = #{queryVo.provinceId}
             </if>

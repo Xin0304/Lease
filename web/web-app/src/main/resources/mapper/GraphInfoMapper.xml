@@ -5,24 +5,13 @@
 <mapper namespace="com.sanjin.lease.web.app.mapper.GraphInfoMapper">
 
 
-    <select id="findGraphinfoListByRoomId" resultType="com.sanjin.lease.web.app.vo.graph.GraphVo">
+    <select id="selectListByItemTypeAndId" resultType="com.sanjin.lease.web.app.vo.graph.GraphVo">
         select name,
                url
         from graph_info
         where is_deleted = 0
           and item_type = #{itemType}
           and item_id = #{id}
-    </select>
-    <select id="selectListByItemTypeAndId" resultType="com.sanjin.lease.web.app.vo.graph.GraphVo">
-        select id,
-               type,
-               name
-        from label_info
-        where is_deleted = 0
-          and id in (select label_id
-                     from apartment_label
-                     where is_deleted = 0
-                       and apartment_id = #{id})
     </select>
 
 </mapper>

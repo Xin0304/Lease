@@ -7,7 +7,7 @@
         <id property="id" column="id"/>
         <result property="roomId" column="room_id"/>
         <collection property="roomGraphVoList" ofType="com.sanjin.lease.web.app.vo.graph.GraphVo"
-                    select="listGraphVoByRoomId"
+                    select="listGraphVoUSerByRoomId"
                     column="room_id" autoMapping="true"/>
     </resultMap>
 
@@ -34,7 +34,7 @@
                url
         from graph_info
         where is_deleted = 0
-          and item_type = ${@com.atguigu.lease.model.enums.ItemType@ROOM.getCode()}
+          and item_type = ${@com.sanjin.lease.model.enums.ItemType@ROOM.getCode()}
           and item_id = #{room_id}
     </select>
 </mapper>

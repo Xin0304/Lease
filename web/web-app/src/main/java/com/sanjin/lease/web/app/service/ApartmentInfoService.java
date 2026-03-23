@@ -1,9 +1,12 @@
 package com.sanjin.lease.web.app.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sanjin.lease.model.entity.ApartmentInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.sanjin.lease.web.app.vo.apartment.ApartmentDetailVo;
 import com.sanjin.lease.web.app.vo.apartment.ApartmentItemVo;
+import com.sanjin.lease.web.app.vo.apartment.ApartmentQueryVo;
 
 /**
 * @author liubo
@@ -17,4 +20,6 @@ public interface ApartmentInfoService extends IService<ApartmentInfo> {
     ApartmentDetailVo getApartmentDetailById(Long id);
 
     ApartmentItemVo getApartmentItemVoById(Long apartmentId);
+
+    IPage<ApartmentItemVo> pageApartmentItemVo(Page<ApartmentItemVo> page, ApartmentQueryVo queryVo);
 }

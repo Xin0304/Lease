@@ -24,6 +24,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.*;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 /**
@@ -51,8 +53,6 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
 
     @Autowired
     private LabelInfoMapper labelInfoMapper;
-    @Autowired
-    private LeaseAgreementMapper leaseAgreementMapper;
 
     @Autowired
     private PaymentTypeMapper paymentTypeMapper;
@@ -62,68 +62,65 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
 
     @Autowired
     private FeeValueMapper feeValueMapper;
+
+
+    // 根据查询房间详情
     @Override
     public RoomDetailVo getRoomDetailById(Long id) {
         RoomInfo roomInfo = roomInfoMapper.selectRoomById(id);
         if (roomInfo == null){
             return null;
         }
-        //2.查询所属公寓信息
+        //查询所在公寓信息
         ApartmentItemVo apartmentItemVo =
-                apartmentInfoService.selectApartmentItemVoById(roomInfo.getApartmentId());
-        //3.查询graphInfoList
-        List<GraphVo> graphInfoList =
-                graphInfoMapper.findGraphinfoListByRoomId(ItemType.ROOM,id);
+                apartmentInfoService.getApartmentItemVoById(roomInfo.getApartmentId());
 
-        //4.查询attrValueList
-        List<AttrValueVo> attrValueList =
-                attrValueMapper.findAttrValueListByRoomId(id);
-        //5.查询facilityInfoList
+        //查询图片列表
+        List<GraphVo> graphVoList =
+                 graphInfoMapper.selectListByItemTypeAndId(ItemType.ROOM,id);
+
+        //查询房间属性信息列表
+        List<AttrValueVo> attrValueVoList =
+                attrValueMapper.selectListAttrValueVoByRoomId(id);
+
+        //查询房间配套信息列表
         List<FacilityInfo> facilityInfoList =
-                facilityInfoMapper.findFacilityInfoListByRoomId(id);
-        //6.查询labelInfoList
+                facilityInfoMapper.selectListFacilityInfoRoomById(id);
+
         List<LabelInfo> labelInfoList =
-                labelInfoMapper.findLabelInfoListByRoomId(id);
+                labelInfoMapper.selectListLabelInfoRoomById(id);
 
-        //7.查询paymentTypeList
+        //查询房间支付方式列表
         List<PaymentType> paymentTypeList =
-                paymentTypeMapper.findPaymentTypeListById(id);
-        //8.查询leaseTermList
+                paymentTypeMapper.selectListPaymentTypeRoomById(id);
+
+        List<FeeValueVo> feeValueVoList =
+                feeValueMapper.selectListFeeValueRoomById(id);
+
         List<LeaseTerm> leaseTermList =
-                leaseTermMapper.findLeaseTermListByRoomId(id);
-        //9.查询费用项目信息
-        List<FeeValueVo> feeValueVos =
-                feeValueMapper.findFeeValueListByRoomId(id);
+                leaseTermMapper.selectListLeaseTermRoomById(id);
 
-        //10.查询房间入住状态
-        LambdaQueryWrapper<LeaseAgreement> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(LeaseAgreement::getRoomId, roomInfo.getId());
-        queryWrapper.in(LeaseAgreement::getStatus, LeaseStatus.SIGNED, LeaseStatus.WITHDRAWING);
-        Long singedCount = leaseAgreementMapper.selectCount(queryWrapper);
-
-        RoomDetailVo appRoomDetailVo = new RoomDetailVo();
-        BeanUtils.copyProperties(roomInfo, appRoomDetailVo);
-        appRoomDetailVo.setIsDelete(roomInfo.getIsDeleted() == 1);
-        appRoomDetailVo.setIsCheckIn(singedCount > 0);
-
-        appRoomDetailVo.setApartmentItemVo(apartmentItemVo);
-        appRoomDetailVo.setGraphVoList(graphInfoList);
-        appRoomDetailVo.setAttrValueVoList(attrValueList);
-        appRoomDetailVo.setFacilityInfoList(facilityInfoList);
-        appRoomDetailVo.setLabelInfoList(labelInfoList);
-        appRoomDetailVo.setPaymentTypeList(paymentTypeList);
-        appRoomDetailVo.setFeeValueVoList(feeValueVos);
-        appRoomDetailVo.setLeaseTermList(leaseTermList);
-
-        return appRoomDetailVo;
+        RoomDetailVo roomDetailVo = new RoomDetailVo();
+        BeanUtils.copyProperties(roomDetailVo, roomInfo);
+        roomDetailVo.setApartmentItemVo(apartmentItemVo);
+        roomDetailVo.setGraphVoList(graphVoList);
+        roomDetailVo.setAttrValueVoList(attrValueVoList);
+        roomDetailVo.setFacilityInfoList(facilityInfoList);
+        roomDetailVo.setLabelInfoList(labelInfoList);
+        roomDetailVo.setPaymentTypeList(paymentTypeList);
+        roomDetailVo.setFeeValueVoList(feeValueVoList);
+        roomDetailVo.setLeaseTermList(leaseTermList);
+        return roomDetailVo;
     }
 
-
+    // 根据公寓id分页查询房间列表
     @Override
     public IPage<RoomItemVo> pageItemByApartmentId(Page<RoomItemVo> page, Long id) {
-        return roomInfoMapper.pageItemByApartmentId(page,id);
+        return roomInfoMapper.pageItemByApartmentId(page, id);
     }
 
+
+    // 根据查询条件分页查询房间列表
     @Override
     public IPage<RoomItemVo> pageRoomItemByQuery(Page<RoomItemVo> page, RoomQueryVo queryVo) {
         return roomInfoMapper.pageRoomItemByQuery(page, queryVo);

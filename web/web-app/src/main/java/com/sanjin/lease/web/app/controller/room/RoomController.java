@@ -27,17 +27,19 @@ public class RoomController {
 
     @Operation(summary = "分页查询房间列表")
     @GetMapping("pageItem")
-    public Result<IPage<RoomItemVo>> pageItem(@RequestParam long current, @RequestParam long size, RoomQueryVo queryVo) {
+    public Result<IPage<RoomItemVo>> pageItem(@RequestParam long current,
+                                              @RequestParam long size,
+                                              RoomQueryVo queryVo) {
         Page<RoomItemVo> page = new Page<>(current, size);
-        IPage<RoomItemVo> list = roomInfoService.pageRoomItemByQuery(page, queryVo);
-        return Result.ok(list);
+        IPage<RoomItemVo> roomItemVoIPage = roomInfoService.pageRoomItemByQuery(page, queryVo);
+        return Result.ok(roomItemVoIPage);
     }
 
     @Operation(summary = "根据id获取房间的详细信息")
     @GetMapping("getDetailById")
     public Result<RoomDetailVo> getDetailById(@RequestParam Long id) {
-        RoomDetailVo roomInfo = roomInfoService.getRoomDetailById(id);
-        return Result.ok(roomInfo);
+        RoomDetailVo roomDetailVo =roomInfoService.getRoomDetailById(id);
+        return Result.ok(roomDetailVo);
     }
 
     @Operation(summary = "根据公寓id分页查询房间列表")
@@ -46,7 +48,7 @@ public class RoomController {
                                                            @RequestParam long size,
                                                            @RequestParam Long id) {
         Page<RoomItemVo> page = new Page<>(current, size);
-        IPage<RoomItemVo> roomItemPage = roomInfoService.pageItemByApartmentId(page, id);
-        return Result.ok(roomItemPage);
+        IPage<RoomItemVo> roomItemVoIPage = roomInfoService.pageItemByApartmentId(page,id);
+        return Result.ok(roomItemVoIPage);
     }
 }

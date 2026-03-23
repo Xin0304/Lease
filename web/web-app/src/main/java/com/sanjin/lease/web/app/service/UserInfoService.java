@@ -2,6 +2,7 @@ package com.sanjin.lease.web.app.service;
 
 import com.sanjin.lease.model.entity.UserInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.sanjin.lease.web.app.vo.user.UserInfoVo;
 
 /**
 * @author liubo
