@@ -1,21 +1,17 @@
 package com.sanjin.lease.web.app.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.sanjin.lease.common.context.LoginUserContext;
 import com.sanjin.lease.model.entity.ApartmentInfo;
 import com.sanjin.lease.model.entity.LeaseAgreement;
 import com.sanjin.lease.model.entity.PaymentType;
 import com.sanjin.lease.model.entity.RoomInfo;
 import com.sanjin.lease.model.enums.ItemType;
-import com.sanjin.lease.model.enums.LeaseStatus;
 import com.sanjin.lease.model.entity.LeaseTerm;
 import com.sanjin.lease.web.app.mapper.*;
 import com.sanjin.lease.web.app.service.LeaseAgreementService;
 import com.sanjin.lease.web.app.vo.agreement.AgreementDetailVo;
 import com.sanjin.lease.web.app.vo.agreement.AgreementItemVo;
 import com.sanjin.lease.web.app.vo.graph.GraphVo;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

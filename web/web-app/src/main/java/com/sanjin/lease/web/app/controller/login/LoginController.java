@@ -1,10 +1,8 @@
 package com.sanjin.lease.web.app.controller.login;
 
-import com.sanjin.lease.common.context.LoginUser;
-import com.sanjin.lease.common.context.LoginUserContext;
 import com.sanjin.lease.common.result.Result;
+import com.sanjin.lease.common.utils.StpAppUtil;
 import com.sanjin.lease.web.app.service.LoginService;
-import com.sanjin.lease.web.app.service.UserInfoService;
 import com.sanjin.lease.web.app.vo.user.LoginVo;
 import com.sanjin.lease.web.app.vo.user.UserInfoVo;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.security.auth.login.LoginContext;
 import java.io.IOException;
 
 @Slf4j
@@ -24,9 +21,6 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
-    @Autowired
-    private UserInfoService userInfoService;
-
 
     @GetMapping("login/getCode")
     @Operation(summary = "获取短信验证码")
@@ -45,7 +39,16 @@ public class LoginController {
     @GetMapping("info")
     @Operation(summary = "获取登录用户信息")
     public Result<UserInfoVo> info() {
-        UserInfoVo userInfoVo = loginService.getUserInfoId(LoginUserContext.getLoginUser().getUserId());
+
+        Long loginIdAsLong = StpAppUtil.getLoginIdAsLong();
+        UserInfoVo userInfoVo = loginService.getUserInfoId(loginIdAsLong);
         return Result.ok(userInfoVo);
+    }
+
+    @PostMapping("logout")
+    @Operation(summary = "退出登录")
+    public Result loginOut(){
+        StpAppUtil.logout();
+        return Result.ok();
     }
 }

@@ -14,4 +14,10 @@ public interface LoginService {
     String userLogin(LoginVo loginVo);
 
     UserInfoVo getUserInfoId(Long userId);
+
+    /**
+     * 根据用户ID查询手机号（租约/历史等表通常用 phone 做字段查询）
+     */
+    String getUserPhone(Long userId);
+
 }

@@ -1,8 +1,8 @@
 package com.sanjin.lease.web.admin.controller.login;
 
 
-import com.sanjin.lease.common.context.LoginUserContext;
 import com.sanjin.lease.common.result.Result;
+import com.sanjin.lease.common.utils.StpAdminUtil;
 import com.sanjin.lease.web.admin.service.LoginService;
 import com.sanjin.lease.web.admin.vo.login.CaptchaVo;
 import com.sanjin.lease.web.admin.vo.login.LoginVo;
@@ -19,6 +19,7 @@ public class LoginController {
 
     @Autowired
     private LoginService loginService;
+
     @Operation(summary = "获取图形验证码")
     @GetMapping("login/captcha")
     public Result<CaptchaVo> getCaptcha() {
@@ -36,7 +37,16 @@ public class LoginController {
     @Operation(summary = "获取登陆用户个人信息")
     @GetMapping("info")
     public Result<SystemUserInfoVo> info() {
-        SystemUserInfoVo user = loginService.findSystemUserInfo(LoginUserContext.getLoginUser().getUserId());
+//        Long loginIdAsLong = StpAdminUtil.getLoginIdAsLong();
+        Long loginIdAsLong = StpAdminUtil.getLoginIdAsLong();
+        SystemUserInfoVo user = loginService.findSystemUserInfo(loginIdAsLong);
         return Result.ok(user);
+    }
+
+    @PostMapping("logout")
+    @Operation(summary = "退出登录")
+    public Result<?> loginOut() {
+        StpAdminUtil.logout();
+        return Result.ok();
     }
 }

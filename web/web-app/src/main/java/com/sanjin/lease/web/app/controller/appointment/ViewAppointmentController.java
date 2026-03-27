@@ -1,16 +1,14 @@
 package com.sanjin.lease.web.app.controller.appointment;
 
 
-import com.sanjin.lease.common.context.LoginUser;
-import com.sanjin.lease.common.context.LoginUserContext;
 import com.sanjin.lease.common.result.Result;
+import com.sanjin.lease.common.utils.StpAppUtil;
 import com.sanjin.lease.model.entity.ViewAppointment;
 import com.sanjin.lease.web.app.service.ViewAppointmentService;
 import com.sanjin.lease.web.app.vo.appointment.AppointmentDetailVo;
 import com.sanjin.lease.web.app.vo.appointment.AppointmentItemVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +24,8 @@ public class ViewAppointmentController {
 
     @Operation(summary = "保存或更新看房预约")
     @PostMapping("saveOrUpdate")
-    public Result saveOrUpdate(@RequestBody ViewAppointment viewAppointment) {
-        viewAppointment.setId(LoginUserContext.getLoginUser().getUserId());
+    public Result<?> saveOrUpdate(@RequestBody ViewAppointment viewAppointment) {
+        viewAppointment.setId(StpAppUtil.getLoginIdAsLong());
         return Result.ok(viewAppointmentService.saveOrUpdate(viewAppointment));
     }
 
@@ -35,7 +33,7 @@ public class ViewAppointmentController {
     @GetMapping("listItem")
     public Result<List<AppointmentItemVo>> listItem() {
         List<AppointmentItemVo> appointmentItemVos =
-                viewAppointmentService.listAppointmentItemByUserId(LoginUserContext.getLoginUser().getUserId());
+                viewAppointmentService.listAppointmentItemByUserId(StpAppUtil.getLoginIdAsLong());
         return Result.ok(appointmentItemVos);
     }
 

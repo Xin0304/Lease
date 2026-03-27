@@ -3,7 +3,6 @@ package com.sanjin.lease.web.app.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.sanjin.lease.common.context.LoginUserContext;
 import com.sanjin.lease.model.entity.BrowsingHistory;
 import com.sanjin.lease.web.app.mapper.BrowsingHistoryMapper;
 import com.sanjin.lease.web.app.service.BrowsingHistoryService;

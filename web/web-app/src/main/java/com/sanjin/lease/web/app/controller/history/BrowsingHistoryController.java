@@ -2,8 +2,8 @@ package com.sanjin.lease.web.app.controller.history;
 
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.sanjin.lease.common.context.LoginUserContext;
 import com.sanjin.lease.common.result.Result;
+import com.sanjin.lease.common.utils.StpAppUtil;
 import com.sanjin.lease.web.app.service.BrowsingHistoryService;
 import com.sanjin.lease.web.app.vo.history.HistoryItemVo;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -29,7 +29,7 @@ public class BrowsingHistoryController {
                                               @RequestParam long size) {
 
         Page<HistoryItemVo> page = new Page<>(current, size);
-        historyService.pageHistoryItemByUserId(page,LoginUserContext.getLoginUser().getUserId());
+        historyService.pageHistoryItemByUserId(page, StpAppUtil.getLoginIdAsLong());
         return Result.ok();
     }
 

@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sanjin.lease.common.exception.LeaseException;
 import com.sanjin.lease.common.redisconstant.RedisConstant;
 import com.sanjin.lease.common.result.ResultCodeEnum;
-import com.sanjin.lease.common.utils.JwtUtil;
+import com.sanjin.lease.common.utils.StpAdminUtil;
 import com.sanjin.lease.model.entity.SystemUser;
 import com.sanjin.lease.model.enums.BaseStatus;
 import com.sanjin.lease.web.admin.mapper.SystemUserMapper;
@@ -28,7 +28,7 @@ public class LoginServiceImpl implements LoginService {
 
     @Autowired
     private StringRedisTemplate redisTemplate;
-    
+
     @Autowired
     private SystemUserMapper systemUserMapper;
     @Autowired
@@ -87,6 +87,7 @@ public class LoginServiceImpl implements LoginService {
         String username = loginVo.getUsername();
         LambdaQueryWrapper<SystemUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SystemUser::getUsername,username);
+        wrapper.eq(SystemUser::getIsDeleted, 0);
         SystemUser systemUser = systemUserMapper.selectOne(wrapper);
         if (systemUser == null){
             throw new LeaseException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
@@ -96,7 +97,8 @@ public class LoginServiceImpl implements LoginService {
         if (systemUser.getStatus() == BaseStatus.DISABLE){
             throw new LeaseException(ResultCodeEnum.ADMIN_ACCOUNT_DISABLED_ERROR);
         }
-        //8 如果用户没有禁用，比较密码
+
+        //8如果用户没有禁用，比较密码
         // 把数据库存储密码 和输入的密码比对，输入密码进行加密之后再比对
         String database_Password = systemUser.getPassword();
         String loginVoPassword = loginVo.getPassword();
@@ -108,11 +110,10 @@ public class LoginServiceImpl implements LoginService {
         if (!database_Password.equals(passWord_md5Hex)){
             throw new LeaseException(ResultCodeEnum.ADMIN_ACCOUNT_ERROR);
         }
+        //10 使用sa-token登录
+        StpAdminUtil.login(systemUser.getId());
+        return StpAdminUtil.getTokenValue();
 
-        //10 使用jwt生成token，返回token
-        String token =
-                JwtUtil.createToken(systemUser.getId(), systemUser.getUsername());
-        return token;
     }
 
     @Override

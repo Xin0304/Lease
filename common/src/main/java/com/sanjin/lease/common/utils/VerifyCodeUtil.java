@@ -1,4 +1,4 @@
-package com.sanjin.lease.web.app.utils;
+package com.sanjin.lease.common.utils;
 
 import java.util.Random;
 

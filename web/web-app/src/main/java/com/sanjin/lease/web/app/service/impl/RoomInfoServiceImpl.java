@@ -1,17 +1,14 @@
 package com.sanjin.lease.web.app.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sanjin.lease.common.exception.LeaseException;
 import com.sanjin.lease.model.entity.*;
-import com.sanjin.lease.model.entity.RoomInfo;
 import com.sanjin.lease.model.enums.ItemType;
-import com.sanjin.lease.model.enums.LeaseStatus;
 import com.sanjin.lease.web.app.mapper.*;
-import com.sanjin.lease.web.app.mapper.RoomInfoMapper;
 import com.sanjin.lease.web.app.service.ApartmentInfoService;
 import com.sanjin.lease.web.app.service.RoomInfoService;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sanjin.lease.web.app.vo.apartment.ApartmentItemVo;
 import com.sanjin.lease.web.app.vo.attr.AttrValueVo;
 import com.sanjin.lease.web.app.vo.fee.FeeValueVo;
@@ -20,13 +17,17 @@ import com.sanjin.lease.web.app.vo.room.RoomDetailVo;
 import com.sanjin.lease.web.app.vo.room.RoomItemVo;
 import com.sanjin.lease.web.app.vo.room.RoomQueryVo;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBloomFilter;
+import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.swing.*;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author liubo
@@ -63,13 +64,33 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     @Autowired
     private FeeValueMapper feeValueMapper;
 
+    @Autowired
+    private RedissonClient redissonClient;
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
 
     // 根据查询房间详情
     @Override
     public RoomDetailVo getRoomDetailById(Long id) {
+        RBloomFilter<Long> bloomFilter = redissonClient.getBloomFilter("bloom:room:id");
+        if (!bloomFilter.contains(id)){
+            // 布隆说没有，那就是真没有，直接拦截恶意穿透！
+            throw new LeaseException("非法请求，该房源不存在!",210);
+        }
+
+        //如果缓存命中，则直接返回
+        String redisKey = "room:detail:" + id;
+        RBucket<RoomDetailVo> bucket = redissonClient.getBucket(redisKey);
+        RoomDetailVo cachedVo = bucket.get();
+        if (cachedVo != null){
+            return cachedVo;
+        }
+
+
+        //查询房间信息
         RoomInfo roomInfo = roomInfoMapper.selectRoomById(id);
         if (roomInfo == null){
-            return null;
+            throw new LeaseException("该房源不存在", 210);
         }
         //查询所在公寓信息
         ApartmentItemVo apartmentItemVo =
@@ -101,7 +122,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
                 leaseTermMapper.selectListLeaseTermRoomById(id);
 
         RoomDetailVo roomDetailVo = new RoomDetailVo();
-        BeanUtils.copyProperties(roomDetailVo, roomInfo);
+        BeanUtils.copyProperties(roomInfo,roomDetailVo);
         roomDetailVo.setApartmentItemVo(apartmentItemVo);
         roomDetailVo.setGraphVoList(graphVoList);
         roomDetailVo.setAttrValueVoList(attrValueVoList);
@@ -110,6 +131,8 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         roomDetailVo.setPaymentTypeList(paymentTypeList);
         roomDetailVo.setFeeValueVoList(feeValueVoList);
         roomDetailVo.setLeaseTermList(leaseTermList);
+        long expireTime = 30 * 60 + new Random().nextInt(5 * 60);
+        bucket.set(roomDetailVo, expireTime, TimeUnit.SECONDS);
         return roomDetailVo;
     }
 

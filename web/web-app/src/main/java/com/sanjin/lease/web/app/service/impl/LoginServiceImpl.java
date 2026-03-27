@@ -5,13 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.sanjin.lease.common.exception.LeaseException;
 import com.sanjin.lease.common.redisconstant.RedisConstant;
 import com.sanjin.lease.common.result.ResultCodeEnum;
-import com.sanjin.lease.common.utils.JwtUtil;
+import com.sanjin.lease.common.utils.StpAppUtil;
+import com.sanjin.lease.common.utils.VerifyCodeUtil;
 import com.sanjin.lease.model.entity.UserInfo;
 import com.sanjin.lease.model.enums.BaseStatus;
 import com.sanjin.lease.web.app.mapper.UserInfoMapper;
 import com.sanjin.lease.web.app.service.LoginService;
-import com.sanjin.lease.web.app.service.UserInfoService;
-import com.sanjin.lease.web.app.utils.VerifyCodeUtil;
 import com.sanjin.lease.web.app.vo.user.LoginVo;
 import com.sanjin.lease.web.app.vo.user.UserInfoVo;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +18,7 @@ import okhttp3.FormBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.beans.BeanUtils;
+import okhttp3.ResponseBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -41,8 +40,6 @@ public class LoginServiceImpl implements LoginService {
 
     @Autowired
     private UserInfoMapper userInfoMapper;
-    @Autowired
-    private UserInfoService userInfoService;
 
     //获取验证码
     @Override
@@ -59,7 +56,7 @@ public class LoginServiceImpl implements LoginService {
         Boolean hasKey = redisTemplate.hasKey(key);
         if (hasKey){
             //若存在，则检查其存在的时间
-            Long expire = redisTemplate.getExpire(key, TimeUnit.MINUTES);
+            Long expire = redisTemplate.getExpire(key, TimeUnit.SECONDS);
             if (RedisConstant.APP_LOGIN_CODE_TTL_SEC - expire <
                     RedisConstant.APP_LOGIN_CODE_RESEND_TIME_SEC){
                 //若存在时间不足一分钟，响应发送过于频繁
@@ -69,7 +66,7 @@ public class LoginServiceImpl implements LoginService {
 
         String verifyCode = VerifyCodeUtil.getVerifyCode(4);
         this.sendMessage(phone,verifyCode);
-        redisTemplate.opsForValue().set(phone,verifyCode,5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key,verifyCode,RedisConstant.APP_LOGIN_CODE_TTL_SEC, TimeUnit.SECONDS);
     }
 
     //用户登录
@@ -77,21 +74,20 @@ public class LoginServiceImpl implements LoginService {
     public String userLogin(LoginVo loginVo) {
 
         //验证手机号
-        if (StringUtils.hasText(loginVo.getPhone())) {
+        if (!StringUtils.hasText(loginVo.getPhone())) {
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_PHONE_EMPTY);
         }
-
-        //验证验证码
-        if (StringUtils.hasText(loginVo.getCode())){
+        if (!StringUtils.hasText(loginVo.getCode())) {
             throw new LeaseException(ResultCodeEnum.APP_LOGIN_CODE_EMPTY);
         }
 
         //获取redis验证码
-        String redis_code = redisTemplate.opsForValue().get(loginVo.getCode());
+        String key = RedisConstant.APP_LOGIN_PREFIX + loginVo.getPhone();
+        String redis_code = redisTemplate.opsForValue().get(key);
 
         //验证码不存在
         if (redis_code == null){
-            throw new LeaseException("验证码获取失败",222);
+            throw new LeaseException(ResultCodeEnum.CAPTCHA_NOT_FOUND);
         }
         //验证码验证
         if (!redis_code.equals(loginVo.getCode())){
@@ -105,6 +101,7 @@ public class LoginServiceImpl implements LoginService {
 
         //创建用户 判断是否是第一次登录
         if (userInfo == null){
+            userInfo = new UserInfo();
             userInfo.setPhone(loginVo.getPhone());
             userInfo.setStatus(BaseStatus.ENABLE);
             userInfoMapper.insert(userInfo);
@@ -115,21 +112,32 @@ public class LoginServiceImpl implements LoginService {
             throw new LeaseException(ResultCodeEnum.APP_ACCOUNT_DISABLED_ERROR);
         }
 
-        return JwtUtil.createToken(userInfo.getId(),userInfo.getPhone());
+        StpAppUtil.login(userInfo.getId());
+
+        return StpAppUtil.getTokenValue();
     }
 
 
     @Override
     public UserInfoVo getUserInfoId(Long userId) {
 
-        UserInfo userInfoId = userInfoService.getById(userId);
-        if (userInfoId == null){
+        UserInfo userInfo = userInfoMapper.selectById(userId);
+        if (userInfo == null){
             throw new LeaseException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
         }
-
-        UserInfoVo userInfoVo = new UserInfoVo(userInfoId.getNickname(), userInfoId.getAvatarUrl());
+        UserInfoVo userInfoVo =
+                new UserInfoVo(userInfo.getNickname(), userInfo.getAvatarUrl());
 
         return userInfoVo;
+    }
+
+    @Override
+    public String getUserPhone(Long userId) {
+        UserInfo userInfo = userInfoMapper.selectById(userId);
+        if (userInfo == null) {
+            throw new LeaseException(ResultCodeEnum.ADMIN_ACCOUNT_NOT_EXIST_ERROR);
+        }
+        return userInfo.getPhone();
     }
 
     private void sendMessage(String phone, String verifyCode) throws IOException {
@@ -157,7 +165,11 @@ public class LoginServiceImpl implements LoginService {
         Request request = new Request.Builder().url(url).addHeader("Authorization", "APPCODE " + appCode).post(body).build();
         Response response = client.newCall(request).execute();
         System.out.println("返回状态码" + response.code() + ",message:" + response.message());
-        String result = response.body().string();
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            throw new IOException("短信服务响应 body 为空");
+        }
+        String result = responseBody.string();
         return result;
     }
     public static String buildRequestUrl(Map<String, String> params) {
