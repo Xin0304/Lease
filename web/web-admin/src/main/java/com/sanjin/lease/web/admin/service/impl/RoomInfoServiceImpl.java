@@ -1,5 +1,8 @@
 package com.sanjin.lease.web.admin.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.sanjin.lease.model.entity.*;
 import com.sanjin.lease.model.enums.ItemType;
 import com.sanjin.lease.web.admin.mapper.*;
@@ -10,11 +13,7 @@ import com.sanjin.lease.web.admin.vo.room.RoomDetailVo;
 import com.sanjin.lease.web.admin.vo.room.RoomItemVo;
 import com.sanjin.lease.web.admin.vo.room.RoomQueryVo;
 import com.sanjin.lease.web.admin.vo.room.RoomSubmitVo;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,26 +76,11 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     @Autowired
     private RedissonClient redissonClient;
 
+
     @Override
     public RoomInfo saveOrUpdateRoom(RoomSubmitVo roomSubmitVo) {
         boolean isUpdate = roomSubmitVo.getId() != null;
         this.saveOrUpdate(roomSubmitVo);
-        
-        // 获取或创建布隆过滤器
-        RBloomFilter<Long> bloomFilter = getOrCreateBloomFilter();
-        
-        // 如果是新增房间（非更新），添加到布隆过滤器
-        if (!isUpdate && roomSubmitVo.getId() != null) {
-            bloomFilter.add(roomSubmitVo.getId());
-            log.info("新增房间 ID={} 到布隆过滤器", roomSubmitVo.getId());
-        }
-        // 如果是更新房间，由于布隆过滤器不支持删除后重新添加，这里也添加一次
-        // （即使已存在也不会影响性能）
-        if (isUpdate && roomSubmitVo.getId() != null) {
-            bloomFilter.add(roomSubmitVo.getId());
-            log.debug("更新房间 ID={} 到布隆过滤器", roomSubmitVo.getId());
-        }
-
 
 
         if (isUpdate) {
@@ -213,24 +197,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             graphInfoService.saveBatch(graphList);
         }
 
-
         return roomSubmitVo;
-    }
-    
-    /**
-     * 获取或创建布隆过滤器
-     * @return 布隆过滤器实例
-     */
-    private RBloomFilter<Long> getOrCreateBloomFilter() {
-        RBloomFilter<Long> bloomFilter = redissonClient.getBloomFilter("bloom:room:id");
-        if (!bloomFilter.isExists()) {
-            // 如果布隆过滤器不存在，先初始化
-            long count = roomInfoMapper.selectCount(null);
-            long expectedInsertions = Math.max(count * 2, 1000); // 至少 1000 的容量
-            bloomFilter.tryInit(expectedInsertions, 0.01);
-            log.info("初始化布隆过滤器，预计插入数量：{}", expectedInsertions);
-        }
-        return bloomFilter;
     }
 
     @Override
@@ -295,13 +262,6 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     public void removeApartmentById(Long id) {
         //删除房间
         this.removeById(id);
-        //布隆过滤器 - 注意：布隆过滤器不支持真正的删除，这里仅做标记
-        // 实际应用中可能需要定期重建布隆过滤器
-        RBloomFilter<Long> bloomFilter = getOrCreateBloomFilter();
-        if (bloomFilter.contains(id)) {
-            bloomFilter.delete();
-            log.debug("从布隆过滤器中删除房间 ID={}", id);
-        }
 
         //删除配套
         LambdaQueryWrapper<RoomFacility> facilityLambdaQueryWrapper = new LambdaQueryWrapper<>();

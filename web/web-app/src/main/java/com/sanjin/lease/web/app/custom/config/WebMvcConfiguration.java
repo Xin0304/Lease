@@ -9,7 +9,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration("appWebMvcConfiguration")
 public class WebMvcConfiguration implements WebMvcConfigurer {
 
-
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new SaInterceptor(handler ->StpAppUtil.checkLogin()))

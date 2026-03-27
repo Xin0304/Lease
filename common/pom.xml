@@ -39,13 +39,8 @@
             <artifactId>commons-codec</artifactId>
         </dependency>
 
-<!--        JWT依赖-->
-        <dependency>
-            <groupId>com.github.whvcse</groupId>
-            <artifactId>easy-captcha</artifactId>
-        </dependency>
-<!--        redis依赖-->
 
+<!--        sa-token依赖-->
         <dependency>
             <groupId>cn.dev33</groupId>
             <artifactId>sa-token-spring-boot3-starter</artifactId>

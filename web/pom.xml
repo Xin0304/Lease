@@ -52,7 +52,10 @@
             <artifactId>redisson-spring-boot-starter</artifactId>
             <version>3.21.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
