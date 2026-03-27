@@ -28,9 +28,12 @@ mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     type-aliases-package: com.sanjin.lease.model.entity
-
-  db-config:
-    update-strategy: NOT_EMPTY
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: is_deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
   mapper-locations: classpath*:/mapper/**/*.xml
 ############## Sa-Token 配置 (文档: https://sa-token.cc) ##############
 sa-token:

@@ -39,9 +39,27 @@ public enum ResultCodeEnum {
     APP_LOGIN_CODE_ERROR(506, "验证码错误"),
     APP_ACCOUNT_DISABLED_ERROR(507, "该用户已被禁用"),
 
+    //秒杀
+    SECKILL_NOT_START(2001, "秒杀活动还没开始，请耐心等待"),
+    SECKILL_HAS_END(2002, "秒杀活动已经结束，下次早点来哦"),
+
+
+    // 锁与并发
+    SECKILL_BUSY(2003, "抢租人数过多，请稍后再试"), // 对应拿不到分布式锁的情况
+
+    // 库存与订单
+    SECKILL_STOCK_NOT_ENOUGH(2004, "手慢了，特价房已被抢光"),
+    SECKILL_REPEAT(2005, "您已经秒杀过了，不要重复下单"),
+
+    // 安全校验
+    SECKILL_URL_ERROR(2006, "秒杀地址校验失败，非法请求"),
+
+    SECKILL_SUCCESS(2000, "恭喜！抢房成功，请尽快支付"),
 
     TOKEN_EXPIRED(601, "token过期"),
     TOKEN_INVALID(602, "token非法");
+
+
 
 
     private final Integer code;

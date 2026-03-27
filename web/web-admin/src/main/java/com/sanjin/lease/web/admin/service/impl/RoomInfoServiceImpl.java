@@ -3,6 +3,9 @@ package com.sanjin.lease.web.admin.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sanjin.lease.common.app.BloomEnum;
+import com.sanjin.lease.common.app.RoomEnum;
+import com.sanjin.lease.common.utils.CacheClient;
 import com.sanjin.lease.model.entity.*;
 import com.sanjin.lease.model.enums.ItemType;
 import com.sanjin.lease.web.admin.mapper.*;
@@ -14,6 +17,7 @@ import com.sanjin.lease.web.admin.vo.room.RoomItemVo;
 import com.sanjin.lease.web.admin.vo.room.RoomQueryVo;
 import com.sanjin.lease.web.admin.vo.room.RoomSubmitVo;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,46 +80,64 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     @Autowired
     private RedissonClient redissonClient;
 
+    @Autowired
+    private CacheClient cacheClient;
 
     @Override
     public RoomInfo saveOrUpdateRoom(RoomSubmitVo roomSubmitVo) {
         boolean isUpdate = roomSubmitVo.getId() != null;
         this.saveOrUpdate(roomSubmitVo);
 
+        cacheClient.delete(RoomEnum.ROOM_INFO_KEY + roomSubmitVo.getId());
 
-        if (isUpdate) {
-            //配套删除
-            LambdaQueryWrapper<RoomFacility> facilityLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            facilityLambdaQueryWrapper.eq(RoomFacility::getRoomId, roomSubmitVo.getId());
-            roomFacilityService.remove(facilityLambdaQueryWrapper);
-
-            //属性
-            LambdaQueryWrapper<RoomAttrValue> valueLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            valueLambdaQueryWrapper.eq(RoomAttrValue::getRoomId, roomSubmitVo.getId());
-            roomAttrValueService.remove(valueLambdaQueryWrapper);
-
-            //租期
-            LambdaQueryWrapper<RoomLeaseTerm> leaseTermLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            leaseTermLambdaQueryWrapper.eq(RoomLeaseTerm::getRoomId, roomSubmitVo.getId());
-            roomLeaseTermService.remove(leaseTermLambdaQueryWrapper);
-
-            //标签
-            LambdaQueryWrapper<RoomLabel> labelLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            labelLambdaQueryWrapper.eq(RoomLabel::getRoomId, roomSubmitVo.getId());
-            roomLabelService.remove(labelLambdaQueryWrapper);
-
-            //支付方式
-            LambdaQueryWrapper<RoomPaymentType> paymentTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            paymentTypeLambdaQueryWrapper.eq(RoomPaymentType::getRoomId, roomSubmitVo.getId());
-            roomPaymentTypeService.remove(paymentTypeLambdaQueryWrapper);
-
-            //图片
-            LambdaQueryWrapper<GraphInfo> graphInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
-            graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemType, ItemType.ROOM);
-            graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemId, roomSubmitVo.getId());
-            graphInfoService.remove(graphInfoLambdaQueryWrapper);
-
+        if (isUpdate){
+            removeApartmentAllById(roomSubmitVo);
         }
+        RoomSubmitVo SaveRoomSubmitVo = getRoomSubmitVoById(roomSubmitVo);
+        RBloomFilter<Long> bloomFilter =
+                redissonClient.getBloomFilter(BloomEnum.BLOOM_ROOM_KEY);
+        bloomFilter.add(roomSubmitVo.getId());
+        return SaveRoomSubmitVo;
+    }
+
+
+    //抽出删除方法
+    private void removeApartmentAllById(RoomSubmitVo roomSubmitVo) {
+        //配套删除
+        LambdaQueryWrapper<RoomFacility> facilityLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        facilityLambdaQueryWrapper.eq(RoomFacility::getRoomId, roomSubmitVo.getId());
+        roomFacilityService.remove(facilityLambdaQueryWrapper);
+
+        //属性
+        LambdaQueryWrapper<RoomAttrValue> valueLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        valueLambdaQueryWrapper.eq(RoomAttrValue::getRoomId, roomSubmitVo.getId());
+        roomAttrValueService.remove(valueLambdaQueryWrapper);
+
+        //租期
+        LambdaQueryWrapper<RoomLeaseTerm> leaseTermLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        leaseTermLambdaQueryWrapper.eq(RoomLeaseTerm::getRoomId, roomSubmitVo.getId());
+        roomLeaseTermService.remove(leaseTermLambdaQueryWrapper);
+
+        //标签
+        LambdaQueryWrapper<RoomLabel> labelLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        labelLambdaQueryWrapper.eq(RoomLabel::getRoomId, roomSubmitVo.getId());
+        roomLabelService.remove(labelLambdaQueryWrapper);
+
+        //支付方式
+        LambdaQueryWrapper<RoomPaymentType> paymentTypeLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        paymentTypeLambdaQueryWrapper.eq(RoomPaymentType::getRoomId, roomSubmitVo.getId());
+        roomPaymentTypeService.remove(paymentTypeLambdaQueryWrapper);
+
+        //图片
+        LambdaQueryWrapper<GraphInfo> graphInfoLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemType, ItemType.ROOM);
+        graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemId, roomSubmitVo.getId());
+        graphInfoService.remove(graphInfoLambdaQueryWrapper);
+
+
+    }
+
+    private RoomSubmitVo getRoomSubmitVoById(RoomSubmitVo roomSubmitVo) {
         //配套
         List<Long> facilityInfoIds = roomSubmitVo.getFacilityInfoIds();
         if (!CollectionUtils.isEmpty(facilityInfoIds)) {
@@ -196,10 +218,9 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
             }
             graphInfoService.saveBatch(graphList);
         }
-
         return roomSubmitVo;
-    }
 
+    }
     @Override
     public RoomDetailVo getRoomDetailById(Long id) {
 
@@ -254,6 +275,7 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     @Override
     public IPage<RoomItemVo> selectApartmentInfoPage(IPage<RoomItemVo> page,
                                                      RoomQueryVo queryVo) {
+
         return roomInfoMapper.selectApartmentInfoPage(page, queryVo);
     }
 
@@ -262,6 +284,13 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
     public void removeApartmentById(Long id) {
         //删除房间
         this.removeById(id);
+
+        LambdaQueryWrapper<RoomInfo> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(RoomInfo::getId, id);
+
+        RoomInfo updateEntity = new RoomInfo();
+        updateEntity.setIsDeleted((byte) 1); // 假设 1 代表已删除
+        this.baseMapper.update(updateEntity, wrapper);
 
         //删除配套
         LambdaQueryWrapper<RoomFacility> facilityLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -294,6 +323,10 @@ public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemType,ItemType.ROOM);
         graphInfoLambdaQueryWrapper.eq(GraphInfo::getItemId, id);
         graphInfoService.remove(graphInfoLambdaQueryWrapper);
+
+        cacheClient.delete(RoomEnum.ROOM_INFO_KEY + id);
+
+        log.info("房间逻辑删除成功，ID: {}, 布隆过滤器未清理", id);
     }
 }
 
