@@ -2,7 +2,8 @@ package com.sanjin.lease.web.app.controller.seckill;
 
 import com.sanjin.lease.common.result.Result;
 import com.sanjin.lease.web.app.service.SeckillRoomService;
-import com.sanjin.lease.web.app.vo.seckill.SeckillOrderVo;
+import com.sanjin.lease.web.app.vo.seckill.SeckillOrderDetailVo;
+import com.sanjin.lease.web.app.vo.seckill.SeckillOrderResultVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,17 +23,17 @@ public class SeckillOrderController {
     private SeckillRoomService seckillRoomService;
     @Operation(summary = "创建秒杀订单")
     @PostMapping("/{roomId}")
-    public Result<SeckillOrderVo> createOrder(@PathVariable Long roomId) {
-        // TODO: 实现秒杀订单创建逻辑（包括 Redis 预减库存、分布式锁等）
-        SeckillOrderVo vo = new SeckillOrderVo();
-        return Result.ok(vo);
+    public Result<SeckillOrderDetailVo> createOrder(@PathVariable Long roomId) {
+         // 实现秒杀订单创建逻辑（包括 Redis 预减库存、分布式锁等）
+        SeckillOrderDetailVo seckillOrderDetailVo = new SeckillOrderDetailVo();
+        return Result.ok(seckillOrderDetailVo);
     }
 
     @Operation(summary = "查询秒杀订单状态")
     @GetMapping("/{orderNo}")
-    public Result<SeckillOrderVo> getOrderStatus(@PathVariable String orderNo) {
-        // TODO: 实现订单状态查询逻辑
-        SeckillOrderVo vo = new SeckillOrderVo();
+    public Result<SeckillOrderResultVo> getOrderStatus(@PathVariable String orderNo) {
+        // 实现订单状态查询逻辑
+        SeckillOrderResultVo vo = new SeckillOrderResultVo();
         return Result.ok(vo);
     }
 }

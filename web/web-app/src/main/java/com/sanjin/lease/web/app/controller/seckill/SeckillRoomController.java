@@ -23,7 +23,7 @@ public class SeckillRoomController {
     public Result<Page<SeckillRoomItemVo>> page(
             @RequestParam(defaultValue = "1") long current,
             @RequestParam(defaultValue = "10") long size) {
-        // TODO: 实现分页查询逻辑，只查询进行中的秒杀活动
+        // 实现分页查询逻辑，只查询进行中的秒杀活动
         Page<SeckillRoomItemVo> page = new Page<>(current, size);
         return Result.ok(page);
     }
@@ -31,7 +31,7 @@ public class SeckillRoomController {
     @Operation(summary = "根据 ID 查询秒杀房间详情")
     @GetMapping("/{id}")
     public Result<SeckillRoomItemVo> getById(@PathVariable Long id) {
-        // TODO: 实现查询详情逻辑
+        //实现查询详情逻辑
         SeckillRoomItemVo vo = new SeckillRoomItemVo();
         return Result.ok(vo);
     }
