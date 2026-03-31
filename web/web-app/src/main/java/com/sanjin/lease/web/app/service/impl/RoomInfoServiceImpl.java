@@ -18,11 +18,10 @@ import com.sanjin.lease.web.app.vo.graph.GraphVo;
 import com.sanjin.lease.web.app.vo.room.RoomDetailVo;
 import com.sanjin.lease.web.app.vo.room.RoomItemVo;
 import com.sanjin.lease.web.app.vo.room.RoomQueryVo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,49 +29,28 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author liubo
- * @description 针对表【room_info(房间信息表)】的数据库操作Service实现
- * @createDate 2023-07-26 11:12:39
+ * @deprecated  针对表【room_info(房间信息表)】的数据库操作Service实现
+ * {@code @createData} 2023-07-26 11:12:39
  */
+@RequiredArgsConstructor
 @Service
 @Slf4j
 public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         implements RoomInfoService {
 
 
-    @Autowired
-    private RoomInfoMapper roomInfoMapper;
-    @Autowired
-    private ApartmentInfoService apartmentInfoService;
-    @Autowired
-    private GraphInfoMapper graphInfoMapper;
-    @Autowired
-    private AttrValueMapper attrValueMapper;
 
-    @Autowired
-    private FacilityInfoMapper facilityInfoMapper;
-
-    @Autowired
-    private LabelInfoMapper labelInfoMapper;
-
-    @Autowired
-    private PaymentTypeMapper paymentTypeMapper;
-
-    @Autowired
-    private LeaseTermMapper leaseTermMapper;
-
-    @Autowired
-    private FeeValueMapper feeValueMapper;
-
-    @Autowired
-    private RedissonClient redissonClient;
-
-    @Autowired
-    private CacheClient cacheClient;
-
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-
-
+    private final RoomInfoMapper roomInfoMapper;
+    private final ApartmentInfoService apartmentInfoService;
+    private final GraphInfoMapper graphInfoMapper;
+    private final AttrValueMapper attrValueMapper;
+    private final FacilityInfoMapper facilityInfoMapper;
+    private final LabelInfoMapper labelInfoMapper;
+    private final PaymentTypeMapper paymentTypeMapper;
+    private final LeaseTermMapper leaseTermMapper;
+    private final FeeValueMapper feeValueMapper;
+    private final RedissonClient redissonClient;
+    private final CacheClient cacheClient;
     /**
      * 根据房间 ID 获取房间详情信息
      *

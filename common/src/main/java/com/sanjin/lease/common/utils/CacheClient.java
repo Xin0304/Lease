@@ -2,8 +2,8 @@ package com.sanjin.lease.common.utils;
 
 
 import com.alibaba.fastjson2.JSON;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -17,10 +17,10 @@ import java.util.concurrent.TimeUnit;
  */
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class CacheClient {
 
-    @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private final StringRedisTemplate stringRedisTemplate;
 
     /**
      * 将数据缓存到 Redis 中
@@ -29,7 +29,6 @@ public class CacheClient {
      * @param value 要缓存的数据对象，可以是任意类型
      * @param time  缓存的过期时间数值
      * @param unit  缓存的过期时间单位（如秒、分钟、小时等）
-     *
      * 操作流程：
      * 1. 将 Java 对象通过 FastJSON2 序列化为 JSON 字符串
      * 2. 将 JSON 字符串存储到 Redis 中
@@ -64,7 +63,6 @@ public class CacheClient {
      * @param clazz 期望返回的数据类型 Class，用于反序列化
      * @param <T>   泛型类型，表示期望返回的类型
      * @return 如果缓存存在，返回对应的数据对象；如果缓存不存在或已过期，返回 null
-     *
      * 操作流程：
      * 1. 根据 key 从 Redis 中获取 JSON 字符串
      * 2. 判断获取的字符串是否为空
@@ -95,7 +93,6 @@ public class CacheClient {
      * 从 Redis 中删除指定的缓存数据
      * 
      * @param key 要删除的缓存键
-     * 
      * 操作流程：
      * 1. 根据 key 从 Redis 中删除对应的缓存数据
      * 2. 在控制台打印日志，记录删除操作的结果
@@ -103,7 +100,7 @@ public class CacheClient {
     public void delete(String key) {
         // 执行 Redis delete 操作
         Boolean deleted = stringRedisTemplate.delete(key);
-        
+
         // 打印日志，记录删除操作结果
         if (deleted != null && deleted) {
             log.info("[缓存删除成功] key: {}", key);

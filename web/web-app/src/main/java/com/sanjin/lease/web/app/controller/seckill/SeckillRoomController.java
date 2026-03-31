@@ -2,6 +2,7 @@ package com.sanjin.lease.web.app.controller.seckill;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sanjin.lease.common.result.Result;
+import com.sanjin.lease.web.app.service.SeckillRoomService;
 import com.sanjin.lease.web.app.vo.seckill.SeckillRoomItemVo;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/app/seckill/room")
 public class SeckillRoomController {
+
 
 
     @Operation(summary = "分页查询正在进行中的秒杀房间列表")
