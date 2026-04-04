@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.sanjin.lease.common.app.BloomEnum;
 import com.sanjin.lease.model.entity.RoomInfo;
 import com.sanjin.lease.web.app.mapper.RoomInfoMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
 import org.redisson.api.RedissonClient;
@@ -15,9 +16,10 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class BloomFilterInitRunner implements ApplicationRunner {
-    @Autowired
-    private RedissonClient redissonClient;
+
+    private final RedissonClient redissonClient;
     
     @Autowired
     private RoomInfoMapper roomInfoMapper;

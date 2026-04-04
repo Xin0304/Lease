@@ -44,10 +44,19 @@ public class StpAdminUtil {
     }
 
     /**
+     * 踢人下线
+     */
+    public static void kickOut(Object loginId) {
+        stpLogic.kickout(loginId);
+    }
+
+    /**
      * 退出登录
      */
     public static void logout() {
         stpLogic.logout();
     }
+
+
 }
 

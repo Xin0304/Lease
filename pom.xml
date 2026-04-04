@@ -24,7 +24,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mybatis-plus.version>3.5.3.1</mybatis-plus.version>
+        <mybatis-plus.version>3.5.4</mybatis-plus.version>
         <redis.version>3.5.1</redis.version>
         <swagger.version>2.9.2</swagger.version>
         <jwt.version>0.11.2</jwt.version>
@@ -34,6 +34,7 @@
         <aliyun.sms.version>2.0.23</aliyun.sms.version>
         <sa-token.version>1.38.0</sa-token.version>
         <sa-token-redis-jackson.version>1.38.0</sa-token-redis-jackson.version>
+        <BCrypt.version>5.7.11</BCrypt.version>
         <fastjson-version>2.0.37</fastjson-version>
     </properties>
 
@@ -44,8 +45,19 @@
             <!--官方文档：https://baomidou.com/pages/bab2db/ -->
             <dependency>
                 <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-boot-starter</artifactId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-crypto</artifactId>
+                <version>${BCrypt.version}</version>
             </dependency>
 
             <!--knife4j文档-->
@@ -62,6 +74,7 @@
                 <artifactId>sa-token-spring-boot3-starter</artifactId>
                 <version>${sa-token.version}</version>
             </dependency>
+<!--            Sa-Token整合Redis 使用jackson序列化方式)-->
             <dependency>
                 <groupId>cn.dev33</groupId>
                 <artifactId>sa-token-redis-jackson</artifactId>
@@ -70,6 +83,12 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-pool2</artifactId>
+            </dependency>
+            <!-- BCrypt 加密 -->
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-crypto</artifactId>
+<!--                <version>${BCrypt.version}}</version>-->
             </dependency>
 <!--            redis依赖-->
             <dependency>

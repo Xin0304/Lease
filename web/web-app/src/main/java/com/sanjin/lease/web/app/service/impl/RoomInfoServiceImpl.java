@@ -28,17 +28,15 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * 针对表【room_info(房间信息表)】的数据库操作Service实现
  * @author liubo
- * @deprecated  针对表【room_info(房间信息表)】的数据库操作Service实现
- * {@code @createData} 2023-07-26 11:12:39
+ * @literal    2023-07-26 11:12:39
  */
 @RequiredArgsConstructor
 @Service
 @Slf4j
 public class RoomInfoServiceImpl extends ServiceImpl<RoomInfoMapper, RoomInfo>
         implements RoomInfoService {
-
-
 
     private final RoomInfoMapper roomInfoMapper;
     private final ApartmentInfoService apartmentInfoService;

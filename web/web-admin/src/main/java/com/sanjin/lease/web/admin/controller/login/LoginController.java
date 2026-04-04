@@ -37,10 +37,16 @@ public class LoginController {
     @Operation(summary = "获取登陆用户个人信息")
     @GetMapping("info")
     public Result<SystemUserInfoVo> info() {
-//        Long loginIdAsLong = StpAdminUtil.getLoginIdAsLong();
         Long loginIdAsLong = StpAdminUtil.getLoginIdAsLong();
         SystemUserInfoVo user = loginService.findSystemUserInfo(loginIdAsLong);
         return Result.ok(user);
+    }
+
+    @Operation(summary = "踢人下线")
+    @PostMapping("/kickOut")
+    public Result<?> kickOut(@RequestParam Long userId) {
+        StpAdminUtil.kickOut(userId);
+        return Result.ok();
     }
 
     @PostMapping("logout")

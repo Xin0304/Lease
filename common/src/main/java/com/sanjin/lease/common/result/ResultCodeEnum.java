@@ -46,7 +46,7 @@ public enum ResultCodeEnum {
 
     // 锁与并发
     SECKILL_BUSY(2003, "抢租人数过多，请稍后再试"), // 对应拿不到分布式锁的情况
-
+    SECKILL_ROOM_NOT_EXIST(2000, "房源不存在"),
     // 库存与订单
     SECKILL_STOCK_NOT_ENOUGH(2004, "手慢了，特价房已被抢光"),
     SECKILL_REPEAT(2005, "您已经秒杀过了，不要重复下单"),

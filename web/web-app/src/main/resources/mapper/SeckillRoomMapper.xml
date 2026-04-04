@@ -7,7 +7,7 @@
     <update id="decreaseStock">
         UPDATE seckill_room 
         SET stock = stock - 1
-        WHERE room_id = #{roomId}
+        WHERE id = #{roomId}
           AND stock > 0 
           AND start_time &lt;= NOW() 
           AND end_time &gt;= NOW()
